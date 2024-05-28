@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { pick } from 'lodash';
 
-import { User } from '../models/user.model';
+import { User, OTP } from '../models';
 import { checkPassowrdValid } from '../utils/password.utils';
 
 interface UserInterface {
@@ -80,4 +80,59 @@ const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-export { registerUser, loginUser };
+const resendVerificationCode = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const payload: UserInterface = pick(req.body, [
+      'email',
+      'password',
+    ]);
+
+    let user = await User.findOne({ email: payload.email });
+
+    if (!user)
+      return res.status(404).send({
+        err_message: 'User does not exsit!',
+      });
+
+    const isPasswordValid: boolean = await checkPassowrdValid(
+      payload.password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      return res.status(401).send({
+        message: 'Invalid credentials!',
+      });
+    }
+
+    if (user.confirmed) {
+      return res.status(200).send({
+        message: 'User is already verified!',
+      });
+    }
+
+    const otpDoc = await OTP.findOne({ email: payload.email });
+
+    if (!otpDoc) {
+      const newOtpDoc = new OTP({
+        email: payload.email,
+      });
+      const newOTP = await newOtpDoc.save();
+      return res.status(200).send({
+        verification_code: newOTP.otp,
+      });
+    }
+    return res.status(200).send({
+      verification_code: otpDoc.otp,
+    });
+  } catch (err: any) {
+    return res.status(400).send({
+      err_message: err?.message || 'Bad request',
+    });
+  }
+};
+
+export { registerUser, loginUser, resendVerificationCode };
