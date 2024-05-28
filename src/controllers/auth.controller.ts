@@ -125,6 +125,7 @@ const resendVerificationCode = async (
         verification_code: newOTP.otp,
       });
     }
+
     return res.status(200).send({
       verification_code: otpDoc.otp,
     });
@@ -135,4 +136,47 @@ const resendVerificationCode = async (
   }
 };
 
-export { registerUser, loginUser, resendVerificationCode };
+const verifyUser = async (req: Request, res: Response) => {
+  try {
+    const payload = pick(req.body, ['email', 'code']);
+
+    const user = await User.findOne({ email: payload.email });
+
+    if (user && user.confirmed) {
+      return res.status(200).send({
+        message: 'User is already verified!',
+      });
+    }
+
+    let verifiedOTP = await OTP.findOne({
+      email: payload.email,
+      otp: payload.code,
+    });
+
+    if (verifiedOTP && user) {
+      await User.findOneAndUpdate(
+        { email: payload.email },
+        { confirmed: true },
+      );
+
+      return res.status(200).send({
+        message: 'User verified successfully!',
+      });
+    }
+
+    return res.status(400).send({
+      message: 'Invalid verification code!',
+    });
+  } catch (err: any) {
+    return res.status(400).send({
+      err_message: err?.message || 'Bad request',
+    });
+  }
+};
+
+export {
+  registerUser,
+  loginUser,
+  resendVerificationCode,
+  verifyUser,
+};
