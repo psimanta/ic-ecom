@@ -21,9 +21,10 @@ app.get('/', (req: Request, res: Response) => {
   return res.status(200).send({ message: 'IC E-com API' });
 });
 
-import { authRouter } from './routers/auth.router';
+import { authRouter, userRouter } from './routers';
 
 app.use('/api/auth', authRouter);
+app.use('/api/user', userRouter);
 
 app.use((req: Request, res: Response) => {
   return res.status(404).send({

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { pick } from 'lodash';
+import jwt from 'jsonwebtoken';
 
 import { User, OTP } from '../models';
 import { checkPassowrdValid } from '../utils/password.utils';
@@ -70,8 +71,14 @@ const loginUser = async (req: Request, res: Response) => {
       });
     }
 
+    const token = jwt.sign(
+      { email: user.email, role: user.role },
+      process.env.JWT_PRIVATE_KEY as jwt.Secret,
+    );
+
     return res.status(200).send({
       message: 'Login successful!',
+      token,
     });
   } catch (err: any) {
     return res.status(400).send({

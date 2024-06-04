@@ -1,7 +1,17 @@
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 
 import { OTP } from './otp.model';
 import { getHashedPassword } from '../utils/password.utils';
+
+interface UserInterface {
+  name: string;
+  email: string;
+  passoword: string;
+  role: 'admin' | 'user';
+  confirmed: boolean;
+  generateAuthToken: any;
+}
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -33,6 +43,13 @@ const userSchema = new mongoose.Schema({
     default: false,
   },
 });
+
+userSchema.methods.generateAuthToken = function () {
+  return jwt.sign(
+    { email: this.email, role: this.role },
+    process.env.JWT_PRIVATE_KEY as jwt.Secret,
+  );
+};
 
 userSchema.pre('save', async function (next) {
   this.password = await getHashedPassword(this.password);
