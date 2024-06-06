@@ -1,4 +1,7 @@
-import express, { Response, Request } from 'express';
+import express, {
+  Response,
+  Request,
+} from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -18,13 +21,14 @@ if (app.get('env') === 'development') {
 const port = process.env.PORT || 3000;
 
 app.get('/', (req: Request, res: Response) => {
-  return res.status(200).send({ message: 'IC E-com API' });
+  return res
+    .status(200)
+    .send({ message: 'IC E-com API' });
 });
 
-import { authRouter, userRouter } from './routers';
+import useRouters from './routers';
 
-app.use('/api/auth', authRouter);
-app.use('/api/user', userRouter);
+useRouters(app);
 
 app.use((req: Request, res: Response) => {
   return res.status(404).send({
@@ -33,5 +37,7 @@ app.use((req: Request, res: Response) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(
+    `Server is running at http://localhost:${port}`,
+  );
 });
