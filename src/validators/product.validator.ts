@@ -40,12 +40,13 @@ export const validateProduct = async (
   next: NextFunction,
 ) => {
   try {
-    await productValidationSchema.validate(
-      req.body,
-    );
+    await productValidationSchema.validate({
+      ...req.body,
+      price: Number(req.body.price),
+      stock: Number(req.body.stock),
+    });
     next();
   } catch (error: any) {
-    console.log(error);
     return res.status(400).send({
       err_message:
         error?.message || 'Validation failed!',

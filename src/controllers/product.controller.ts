@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
-import { pick } from 'lodash';
+import fs from 'fs';
 
 import { Product } from '../models';
+import cloudinary from '../services/cloudinary.service';
+import { uploadAndGetUrl } from '../utils/upload.utlis';
 
 const getProducts = async (
   req: Request,
@@ -45,15 +47,21 @@ const createProduct = async (
   res: Response,
 ) => {
   try {
-    const payload = pick(req.body, [
-      'name',
-      'description',
-      'price',
-      'stock',
-      'category',
-    ]);
+    const image = req.file;
+    if (!image) {
+      return res.status(400).send({
+        err_message: 'Product image missing!',
+      });
+    }
 
-    const result = await Product.create(payload);
+    const imageUrl = await uploadAndGetUrl(
+      image.path,
+    );
+
+    const result = await Product.create({
+      ...req.body,
+      imageUrl,
+    });
 
     return res.status(201).send({
       product: result,

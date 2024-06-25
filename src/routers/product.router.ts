@@ -4,8 +4,11 @@ import {
   createProduct,
   getProducts,
 } from '../controllers/product.controller';
-import authenticate from '../middlewares/authenticate.middleware';
-import authorize from '../middlewares/authorize.middleware';
+import {
+  authenticate,
+  authorize,
+  parseWithMulter,
+} from '../middlewares';
 import { validateProduct } from '../validators';
 
 const router = Router();
@@ -15,7 +18,7 @@ router
   .get(getProducts)
   .post(
     [authenticate, authorize],
-    [validateProduct],
+    [parseWithMulter, validateProduct],
     createProduct,
   );
 

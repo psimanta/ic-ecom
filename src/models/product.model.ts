@@ -5,8 +5,12 @@ const productSchema = new Schema(
     name: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
-    stock: { type: Number, required: true, min: 0 },
-    imageUrl: String,
+    stock: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    imageUrl: { type: String, required: true },
     category: {
       type: Schema.Types.ObjectId,
       required: true,
@@ -16,4 +20,7 @@ const productSchema = new Schema(
   { timestamps: true },
 );
 
-export const Product = model('Producte', productSchema);
+export const Product = model(
+  'Producte',
+  productSchema,
+);
