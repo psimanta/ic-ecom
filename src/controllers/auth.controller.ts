@@ -3,7 +3,10 @@ import { pick } from 'lodash';
 import jwt from 'jsonwebtoken';
 
 import { User, OTP } from '../models';
-import { checkPassowrdValid } from '../utils/password.utils';
+import {
+  checkPassowrdValid,
+  getHashedPassword,
+} from '../utils/password.utils';
 
 interface UserInterface {
   email: string;
@@ -117,18 +120,6 @@ const resendVerificationCode = async (
         err_message: 'User does not exsit!',
       });
 
-    const isPasswordValid: boolean =
-      await checkPassowrdValid(
-        payload.password,
-        user.password,
-      );
-
-    if (!isPasswordValid) {
-      return res.status(401).send({
-        message: 'Invalid credentials!',
-      });
-    }
-
     if (user.confirmed) {
       return res.status(200).send({
         message: 'User is already verified!',
@@ -143,9 +134,9 @@ const resendVerificationCode = async (
       const newOtpDoc = new OTP({
         email: payload.email,
       });
-      const newOTP = await newOtpDoc.save();
+      await newOtpDoc.save();
       return res.status(200).send({
-        verification_code: newOTP.otp,
+        message: 'Code has been resent!',
       });
     }
 
@@ -174,8 +165,8 @@ const verifyUser = async (
     });
 
     if (user && user.confirmed) {
-      return res.status(200).send({
-        message: 'User is already verified!',
+      return res.status(400).send({
+        err_message: 'User is already verified!',
       });
     }
 
@@ -189,6 +180,10 @@ const verifyUser = async (
         { email: payload.email },
         { confirmed: true },
       );
+
+      await OTP.deleteMany({
+        email: payload.email,
+      });
 
       return res.status(200).send({
         message: 'User verified successfully!',
@@ -205,9 +200,71 @@ const verifyUser = async (
   }
 };
 
+const sendPasswordResetCode = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const email = req.body?.email;
+    if (!email)
+      return res.status(400).send({
+        err_message:
+          'Email is required to reset password!',
+      });
+    const otp = new OTP({
+      email,
+    });
+    await otp.save();
+    return res.status(200).send({
+      message:
+        'A password reset code has been sent to your registered email.',
+    });
+  } catch (err: any) {
+    return res.status(400).send({
+      err_message: err?.message || 'Bad request',
+    });
+  }
+};
+
+const changePassword = async (
+  req: Request,
+  res: Response,
+) => {
+  const payload = {
+    code: req.body?.code,
+    email: req.body?.email,
+    password: req.body?.password,
+  };
+  try {
+    const validCode = await OTP.findOne({
+      otp: payload.code,
+      email: payload.email,
+    });
+    if (!validCode)
+      return res.status(400).send({
+        err_message: 'Verification failed!',
+      });
+    const hashedPassword =
+      await getHashedPassword(payload.password);
+    await User.updateOne({
+      email: payload.email,
+      password: hashedPassword,
+    });
+    return res.status(200).send({
+      message: 'Password updated successfully!',
+    });
+  } catch (err: any) {
+    return res.status(400).send({
+      err_message: err?.message || 'Bad request',
+    });
+  }
+};
+
 export {
   registerUser,
   loginUser,
   resendVerificationCode,
   verifyUser,
+  sendPasswordResetCode,
+  changePassword,
 };

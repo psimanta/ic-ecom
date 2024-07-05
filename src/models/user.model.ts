@@ -61,14 +61,10 @@ userSchema.pre('save', async function (next) {
 });
 
 userSchema.post('save', async function () {
-  const result = await OTP.create({
+  const otp = new OTP({
     email: this.email,
   });
-
-  sendVerificationCodeMail({
-    to: this.email,
-    code: result.otp,
-  });
+  await otp.save();
 });
 
 export const User = mongoose.model(

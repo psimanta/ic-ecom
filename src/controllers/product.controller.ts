@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
-import fs from 'fs';
 
 import { Product } from '../models';
-import cloudinary from '../services/cloudinary.service';
 import { uploadAndGetUrl } from '../utils/upload.utlis';
 
 const getProducts = async (
@@ -11,7 +9,7 @@ const getProducts = async (
 ) => {
   try {
     /* 
-     /api/product?page=4&per_page=10
+     /api/product?page=4&per_page=10&sortBy=price&order=asc&filterBy=description&search=
     */
     // filter => search
     // sort => any field
@@ -20,6 +18,7 @@ const getProducts = async (
     const limit: number =
       Number(query?.per_page) || 20;
     const skip: number = (page - 1) * limit;
+
     const products = await Product.find()
       .skip(skip)
       .limit(limit)
