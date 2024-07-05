@@ -11,15 +11,19 @@ interface UserInterface {
   name?: string;
 }
 
-const registerUser = async (req: Request, res: Response) => {
+const registerUser = async (
+  req: Request,
+  res: Response,
+) => {
   try {
-    const payload: UserInterface = pick(req.body, [
-      'email',
-      'name',
-      'password',
-    ]);
+    const payload: UserInterface = pick(
+      req.body,
+      ['email', 'name', 'password'],
+    );
 
-    let user = await User.findOne({ email: payload.email });
+    let user = await User.findOne({
+      email: payload.email,
+    });
 
     if (user) {
       return res.status(400).send({
@@ -31,7 +35,8 @@ const registerUser = async (req: Request, res: Response) => {
     await user.save();
 
     return res.status(201).send({
-      message: 'User is registered!',
+      message:
+        'User is registered! A verification code has been sent to your email.',
     });
   } catch (err: any) {
     return res.status(400).send({
@@ -40,24 +45,30 @@ const registerUser = async (req: Request, res: Response) => {
   }
 };
 
-const loginUser = async (req: Request, res: Response) => {
+const loginUser = async (
+  req: Request,
+  res: Response,
+) => {
   try {
-    const payload: UserInterface = pick(req.body, [
-      'email',
-      'password',
-    ]);
+    const payload: UserInterface = pick(
+      req.body,
+      ['email', 'password'],
+    );
 
-    let user = await User.findOne({ email: payload.email });
+    let user = await User.findOne({
+      email: payload.email,
+    });
 
     if (!user)
       return res.status(404).send({
         err_message: 'User does not exsit!',
       });
 
-    const isPasswordValid: boolean = await checkPassowrdValid(
-      payload.password,
-      user.password,
-    );
+    const isPasswordValid: boolean =
+      await checkPassowrdValid(
+        payload.password,
+        user.password,
+      );
 
     if (!isPasswordValid) {
       return res.status(401).send({
@@ -92,22 +103,25 @@ const resendVerificationCode = async (
   res: Response,
 ) => {
   try {
-    const payload: UserInterface = pick(req.body, [
-      'email',
-      'password',
-    ]);
+    const payload: UserInterface = pick(
+      req.body,
+      ['email', 'password'],
+    );
 
-    let user = await User.findOne({ email: payload.email });
+    let user = await User.findOne({
+      email: payload.email,
+    });
 
     if (!user)
       return res.status(404).send({
         err_message: 'User does not exsit!',
       });
 
-    const isPasswordValid: boolean = await checkPassowrdValid(
-      payload.password,
-      user.password,
-    );
+    const isPasswordValid: boolean =
+      await checkPassowrdValid(
+        payload.password,
+        user.password,
+      );
 
     if (!isPasswordValid) {
       return res.status(401).send({
@@ -121,7 +135,9 @@ const resendVerificationCode = async (
       });
     }
 
-    const otpDoc = await OTP.findOne({ email: payload.email });
+    const otpDoc = await OTP.findOne({
+      email: payload.email,
+    });
 
     if (!otpDoc) {
       const newOtpDoc = new OTP({
@@ -143,11 +159,19 @@ const resendVerificationCode = async (
   }
 };
 
-const verifyUser = async (req: Request, res: Response) => {
+const verifyUser = async (
+  req: Request,
+  res: Response,
+) => {
   try {
-    const payload = pick(req.body, ['email', 'code']);
+    const payload = pick(req.body, [
+      'email',
+      'code',
+    ]);
 
-    const user = await User.findOne({ email: payload.email });
+    const user = await User.findOne({
+      email: payload.email,
+    });
 
     if (user && user.confirmed) {
       return res.status(200).send({

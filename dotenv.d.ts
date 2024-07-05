@@ -10,5 +10,7 @@ declare namespace NodeJS {
     CLOUDINARY_CLOUD_NAME: string;
     CLOUDINARY_API_KEY: string;
     CLOUDINARY_API_SECRET_KEY: string;
+    MAILER_USER: string;
+    MAILER_PASSWORD: string;
   }
 }

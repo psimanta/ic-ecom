@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { OTP } from './otp.model';
 import { getHashedPassword } from '../utils/password.utils';
+import { sendVerificationCodeMail } from '../utils/mail.utils';
 
 interface UserInterface {
   name: string;
@@ -44,20 +45,33 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.methods.generateAuthToken = function () {
-  return jwt.sign(
-    { email: this.email, role: this.role },
-    process.env.JWT_PRIVATE_KEY as jwt.Secret,
-  );
-};
+userSchema.methods.generateAuthToken =
+  function () {
+    return jwt.sign(
+      { email: this.email, role: this.role },
+      process.env.JWT_PRIVATE_KEY as jwt.Secret,
+    );
+  };
 
 userSchema.pre('save', async function (next) {
-  this.password = await getHashedPassword(this.password);
+  this.password = await getHashedPassword(
+    this.password,
+  );
   next();
 });
 
 userSchema.post('save', async function () {
-  await OTP.create({ email: this.email });
+  const result = await OTP.create({
+    email: this.email,
+  });
+
+  sendVerificationCodeMail({
+    to: this.email,
+    code: result.otp,
+  });
 });
 
-export const User = mongoose.model('User', userSchema);
+export const User = mongoose.model(
+  'User',
+  userSchema,
+);

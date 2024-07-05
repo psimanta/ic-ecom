@@ -21,6 +21,7 @@
     "lodash": "^4.17.21",
     "mongoose": "^8.4.0",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.14",
     "yup": "^1.4.0"
   },
   "devDependencies": {
@@ -30,6 +31,7 @@
     "@types/lodash": "^4.17.4",
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.12.12",
+    "@types/nodemailer": "^6.4.15",
     "morgan": "^1.10.0",
     "nodemon": "^3.1.1",
     "prettier": "^3.2.5",
