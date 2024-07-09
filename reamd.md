@@ -1,0 +1,1 @@
+CI/CD => continuous integration and continuous delivery or deployment
